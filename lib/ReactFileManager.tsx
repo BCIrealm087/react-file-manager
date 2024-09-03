@@ -1,23 +1,23 @@
 import React, { useState } from "react";
-// Context
-import { FileManagerContext } from "./context";
-// Components
-import { Navbar, Workspace } from "./components";
-// Types
-import type { FileSystemType } from "./types";
-import { ViewStyle } from "./types";
+import Navbar from "./components/Navbar";
+import Workspace from "./components/Workspace";
+import { ViewStyle } from "./types/Enums";
+import { FileType, Labels } from "./types/Types";
+import { FileManagerContext } from "./context/FileManagerContext";
 
-export interface IFileManagerProps {
-  fs: FileSystemType;
+interface IFileManagerProps {
+  fs: FileType[];
   viewOnly?: boolean;
-  onDoubleClick?: (id: string) => Promise<void>;
+  onDoubleClick?: (id: string) => void;
   onRefresh?: (id: string) => Promise<void>;
-  onUpload?: (fileData: any, folderId: string) => Promise<void>;
-  onCreateFolder?: (folderName: string) => Promise<void>;
-  onDelete?: (fileId: string) => Promise<void>;
+  onUpload?: (file: File, folderId: string) => Promise<boolean>;
+  onCreateFolder?: (name: string, ref: HTMLInputElement) => Promise<boolean>;
+  onDelete?: (id: string) => void;
+  onRename?: (id: string, newName: string, ref: HTMLInputElement) => Promise<boolean>;
+  labels?: Partial<Labels>;
 }
 
-export const ReactFileManager = ({
+const ReactFileManager: React.FC<IFileManagerProps> = ({
   fs,
   viewOnly,
   onDoubleClick,
@@ -25,27 +25,53 @@ export const ReactFileManager = ({
   onUpload,
   onCreateFolder,
   onDelete,
-}: IFileManagerProps) => {
-  const [currentFolder, setCurrentFolder] = useState<string>("0"); // Root folder ID must be "0"
-  const [uploadedFileData, setUploadedFileData] = useState<any>();
+  onRename,
+  labels,
+}) => {
+  const [currentFolder, setCurrentFolder] = useState<string>("0");
+  const [uploadedFileData, setUploadedFileData] = useState<File | undefined>();
   const [viewStyle, setViewStyle] = useState<ViewStyle>(ViewStyle.List);
+
+  const defaultLabels: Labels = {
+    fileName: 'Name',
+    lastModified: 'Last Modified',
+    addFolderButton: 'Add Folder',
+    addFolderTitle: 'Create New Folder',
+    addFolderPlaceholder: 'Folder Name',
+    addFolderConfirm: 'Create',
+    manageTitle: 'Managing',
+    renameButton: 'Rename',
+    renameTitle: 'Rename',
+    renameConfirm: 'Rename',
+    deleteButton: 'Delete',
+    deleteTitle: 'Delete',
+    deleteConfirm: 'Delete',
+    uploadTitle: 'Upload file',
+    uploadConfirmationMsg: 'Are you sure you want to upload the file?',
+    uploadConfirm: 'Upload',
+    cancel: 'Cancel',
+  };
+
+  const chosenLabels = { ...defaultLabels, ...labels };
 
   return (
     <FileManagerContext.Provider
       value={{
-        fs: fs,
-        viewStyle: viewStyle,
-        setViewStyle: setViewStyle,
-        viewOnly: viewOnly,
-        currentFolder: currentFolder,
-        setCurrentFolder: setCurrentFolder,
-        onDoubleClick: onDoubleClick,
-        onRefresh: onRefresh,
-        onUpload: onUpload,
-        onCreateFolder: onCreateFolder,
-        onDelete: onDelete,
-        uploadedFileData: uploadedFileData,
-        setUploadedFileData: setUploadedFileData,
+        fs,
+        labels: chosenLabels,
+        viewStyle,
+        setViewStyle,
+        viewOnly,
+        currentFolder,
+        setCurrentFolder,
+        onDoubleClick,
+        onRefresh,
+        onUpload,
+        onCreateFolder,
+        onDelete,
+        onRename,
+        uploadedFileData,
+        setUploadedFileData,
       }}
     >
       <div className="rfm-main-container">
@@ -55,3 +81,6 @@ export const ReactFileManager = ({
     </FileManagerContext.Provider>
   );
 };
+
+export { ReactFileManager };
+export type { IFileManagerProps };

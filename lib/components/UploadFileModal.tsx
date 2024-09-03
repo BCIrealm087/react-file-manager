@@ -1,41 +1,48 @@
 import React from "react";
-import { useFileManager } from "../context";
 import CommonModal from "./CommonModal";
+import { useFileManager } from "../context/FileManagerContext";
 
-interface IUploadFileModalProps {
+interface UploadFileModalProps {
   isVisible: boolean;
   onClose: () => void;
 }
 
-const UploadFileModal = (props: IUploadFileModalProps) => {
-  const { onUpload, uploadedFileData, currentFolder } = useFileManager();
+const UploadFileModal: React.FC<UploadFileModalProps> = ({ isVisible, onClose }) => {
+  const { labels, onUpload, uploadedFileData, currentFolder } = useFileManager();
 
   const onConfirm = async () => {
     if (onUpload && uploadedFileData) {
-      await onUpload(uploadedFileData, currentFolder);
+      try {
+        await onUpload(uploadedFileData, currentFolder);
+        onClose();
+      } catch (error) {
+        console.error("Error uploading file:", error);
+      }
     }
   };
 
   return (
-    <CommonModal title="Upload file" {...props}>
+    <CommonModal
+      title={labels.uploadTitle}
+      isVisible={isVisible}
+      onClose={onClose}
+    >
       <div>
-        <h4 className="rfm-upload-file-modal-title">
-          Are you sure you want to upload the file?
-        </h4>
+        <h4 className="rfm-upload-file-modal-title">{labels.uploadConfirmationMsg}</h4>
         <div className="rfm-upload-file-modal-container">
           <button
             onClick={onConfirm}
-            type="submit"
+            type="button"
             className="rfm-upload-file-modal-btn rfm-upload-file-modal-btn-confirm"
           >
-            Upload
+            {labels.uploadConfirm}
           </button>
           <button
-            onClick={props.onClose}
-            type="submit"
+            onClick={onClose}
+            type="button"
             className="rfm-upload-file-modal-btn rfm-upload-file-modal-btn-cancel"
           >
-            Cancel
+            {labels.cancel}
           </button>
         </div>
       </div>

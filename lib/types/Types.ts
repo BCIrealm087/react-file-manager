@@ -1,11 +1,46 @@
-// Be careful: even a folder is a file!
+import { ViewStyle } from "./Enums";
+
 export type FileType = {
-  id: string; // Unique ID given to this file
+  id: string;
   name: string;
-  isDir: boolean;
-  path?: string; // Optional because files inherit the path from the parentId folder
-  parentId?: string; // Optional because the root folder does not have a parent
-  lastModified?: number
+  isRoot?: false;
+  isDir: false;
+  path?: string;
+  parentId: string;
+  lastModified?: number;
+} | {
+  id: string;
+  name: string;
+  isRoot?: false;
+  isDir: true;
+  path: string;
+  parentId: string;
+  lastModified?: number;
+} | {
+  id: string;
+  name: string;
+  isRoot: true;
+  isDir: true;
+  path: string;
+  lastModified?: number;
 };
 
-export type FileSystemType = FileType[];
+export interface Labels {
+  fileName: string;
+  lastModified: string;
+  addFolderButton: string;
+  addFolderTitle: string;
+  addFolderPlaceholder: string;
+  addFolderConfirm: string;
+  manageTitle: string;
+  renameButton: string;
+  renameTitle: string;
+  renameConfirm: string;
+  deleteButton: string;
+  deleteTitle: string;
+  deleteConfirm: string;
+  uploadTitle: string;
+  uploadConfirmationMsg: string;
+  uploadConfirm: string;
+  cancel: string;
+}
