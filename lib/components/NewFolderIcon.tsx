@@ -1,8 +1,10 @@
 import React from "react";
 
-const NewFolderIcon = ({
-  onClick,
-}: React.AllHTMLAttributes<HTMLDivElement>) => {
+interface NewFolderIconProps {
+  onClick: () => void;
+}
+
+const NewFolderIcon: React.FC<NewFolderIconProps> = ({ onClick }) => {
   return (
     <div onClick={onClick} className="rfm-folder-icon-container">
       <span className="rfm-folder-icon-span">+</span>

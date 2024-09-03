@@ -1,51 +1,61 @@
 import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
-import { useFileManager } from "../context";
-import type { FileType } from "../types";
-import { ViewStyle } from "../types";
-
-// Components
-import FileIcon from "./FileIcon";
+import { useFileManager } from "../context/FileManagerContext";
+import FileIcon from "./FileIcon"
 import NewFolderIcon from "./NewFolderIcon";
 import FolderPath from "./FolderPath";
 import NewFolderModal from "./NewFolderModal";
+import DelItemModal from "./DelItemModal";
+import RenameItemModal from "./RenameItemModal";
+import ManageItemModal from "./ManageItemModal";
 import UploadFileModal from "./UploadFileModal";
+import SvgIcon from "./SvgIcon"
+import { createColumnHelper, flexRender, getCoreRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table";
+import { FileType } from "../types/Types";
 
-
-import {
-  createColumnHelper,
-  flexRender,
-  getCoreRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from '@tanstack/react-table'
-import SvgIcon from "./SvgIcon";
-
-
-const columnHelper = createColumnHelper<FileType>()
-
+const columnHelper = createColumnHelper<FileType>();
 const columns = [
-  columnHelper.accessor('name', {
-    header: () => 'Name',
-    cell: info => (
-    <div className="rfm-workspace-list-icon-td">
-      <SvgIcon svgType={info.row.original.isDir ? "folder" : "file"} className="rfm-workspace-list-icon"/>
-      <p>{info.getValue()}</p>
-    </div>
-    ),
+  columnHelper.accessor("name", {
+    header: () => "Name",
+    cell: (info) => (
+      <div className="rfm-workspace-list-icon-td">
+        <SvgIcon svgType={info.row.original.isDir ? "folder" : "file"} className="rfm-workspace-list-icon" />
+        <p>{info.getValue()}</p>
+      </div>
+    )
   }),
-  columnHelper.accessor('lastModified', {
-    header: () => 'Last Modified',
-    cell: info => info.getValue() ? new Date((info.getValue() as number) * 1000).toLocaleString() : 'N/A',
-  }),
-]
+  columnHelper.accessor("lastModified", {
+    header: () => "Last Modified",
+    cell: (info) => {
+      const value = info.getValue();
+      return (value) ? new Date(value).toLocaleString() : "N/A";
+    }
+  })
+];
 
-const Workspace = () => {
-  const { currentFolder, fs, viewStyle, viewOnly, setCurrentFolder, setUploadedFileData, onDoubleClick, onRefresh } = useFileManager();
-  const [newFolderModalVisible, setNewFolderModalVisible] =
-    useState<boolean>(false);
-  const [uploadFileModalVisible, setUploadFileModalVisible] =
-    useState<boolean>(false);
+type ShortFileInfo = {
+  id: string, 
+  name: string
+}
+
+const Workspace: React.FC = () => {
+  const {
+    labels,
+    currentFolder,
+    fs,
+    viewStyle,
+    viewOnly,
+    setCurrentFolder,
+    setUploadedFileData,
+    onDoubleClick,
+    onRefresh,
+  } = useFileManager();
+  
+  const [newFolderModalVisible, setNewFolderModalVisible] = useState(false);
+  const [toDeleteItem, setToDeleteItem] = useState<ShortFileInfo | null>(null);
+  const [toRenameItem, setToRenameItem] = useState<ShortFileInfo | null>(null);
+  const [uploadFileModalVisible, setUploadFileModalVisible] = useState(false);
+  const [toManageItem, setToManageItem] = useState<ShortFileInfo | null>(null);
 
   const setUploadModalVisible = (value: boolean) => {
     if (viewOnly) {
@@ -58,6 +68,15 @@ const Workspace = () => {
   useEffect(() => {
     if (newFolderModalVisible) {
       setNewFolderModalVisible(false);
+    }
+    if (toDeleteItem) {
+      setToDeleteItem(null);
+    }
+    if (toRenameItem) {
+      setToRenameItem(null);
+    }
+    if (toManageItem) {
+      setToManageItem(null);
     }
     if (uploadFileModalVisible) {
       setUploadModalVisible(false);
@@ -82,121 +101,178 @@ const Workspace = () => {
   const { getRootProps, isDragAccept } = useDropzone({
     noClick: true,
     noKeyboard: true,
-    onDrop: onDrop,
+    onDrop,
   });
 
   const currentFolderFiles = useMemo(() => {
-    const files = fs.filter((f: FileType) => f.parentId === currentFolder);
+    const files = fs.filter((f) => 'parentId' in f && f.parentId === currentFolder);
     return files;
   }, [fs, currentFolder]);
 
-  const table = useReactTable({data: currentFolderFiles, columns, getCoreRowModel: getCoreRowModel(), getSortedRowModel: getSortedRowModel(),
+  const table = useReactTable<FileType>({
+    data: currentFolderFiles,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     initialState: {
-      sorting: [{ id: 'name', desc: false }],
-    },})
+      sorting: [{ id: "name", desc: false }]
+    }
+  });
 
   const handleClick = async (file: FileType) => {
-
     if (file.isDir) {
       setCurrentFolder(file.id);
-      if (onRefresh !== undefined) {
+      if (onRefresh) {
         try {
           await onRefresh(file.id);
         } catch (e) {
-          throw new Error("Error during refresh");
+          console.error("Error during refresh", e);
         }
       }
     }
-    
   };
 
   const handleDoubleClick = (id: string) => {
     if (onDoubleClick) {
-      onDoubleClick(id)
+      onDoubleClick(id);
     }
-  }
+  };
+
+  const openNewFolderModal = () => {
+    setNewFolderModalVisible(true);
+    setToManageItem(null);
+    setToDeleteItem(null);
+    setToRenameItem(null);
+  };
+
+  const openManageItemModal = (item: ShortFileInfo) => {
+    setToManageItem(item);
+    setNewFolderModalVisible(false);
+  };
+
+  const openDeleteItemModal = (item: ShortFileInfo) => {
+    setToDeleteItem(item);
+    setNewFolderModalVisible(false);
+  };
+
+  const openRenameItemModal = (item: ShortFileInfo) => {
+    setToRenameItem(item);
+    setNewFolderModalVisible(false);
+  };
+
+  const handleContextMenu = (event: React.MouseEvent, fileId: string, fileName: string) => {
+    event.preventDefault();
+    setNewFolderModalVisible(false);
+    openManageItemModal({ id: fileId, name: fileName });
+  };
 
   return (
-    <section
-      id="react-file-manager-workspace"
-      className={`rfm-workspace ${
-        isDragAccept && !viewOnly ? "rfm-workspace-dropzone" : ""
-      }`}
-      {...getRootProps()}
-    >
-      {/* Top bar with folder path */}
-      <FolderPath />
-
-      {/* File listing */}
-      <div className="rfm-workspace-file-listing">
-        
-        {/* Icons File View */}
-        {viewStyle === ViewStyle.Icons && (
-          <>
-          {currentFolderFiles.map((f: FileType, key: number) => {
-            return (
-              <button onDoubleClick={() => handleDoubleClick(f.id)} key={key}>
-                <FileIcon id={f.id} name={f.name} isDir={f.isDir}/>
-              </button>
-            )}
+    <div className="rfm-workspace">
+      <section
+        id="react-file-manager-workspace"
+        className={`rfm-workspace ${isDragAccept && !viewOnly ? "rfm-workspace-dropzone" : ""}`}
+        {...getRootProps()}
+      >
+        <FolderPath />
+        <div className="rfm-workspace-file-listing">
+          {viewStyle === "icons" && (
+            <>
+              {currentFolderFiles.map((f) => (
+                <button key={f.id} onDoubleClick={() => handleDoubleClick(f.id)}>
+                  <FileIcon id={f.id} name={f.name} isDir={f.isDir} handleContextMenu={handleContextMenu} />
+                </button>
+              ))}
+              {!viewOnly && <NewFolderIcon onClick={openNewFolderModal} />}
+            </>
           )}
-          {!viewOnly && (
-            <NewFolderIcon onClick={() => setNewFolderModalVisible(true)} />
+          {viewStyle === "list" && (
+            <>
+              <table className="w-full">
+                <thead>
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <tr key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => (
+                        <th key={header.id} className="rfm-workspace-list-th" onClick={header.column.getToggleSortingHandler()}>
+                          <div className="rfm-workspace-list-th-content">
+                            {flexRender(header.column.columnDef.header, header.getContext())}
+                            {header.column.getIsSorted()
+                              ? header.column.getIsSorted() === "desc"
+                                ? <SvgIcon svgType="arrow-down" className="rfm-header-sort-icon" />
+                                : <SvgIcon svgType="arrow-up" className="rfm-header-sort-icon" />
+                              : ""}
+                          </div>
+                        </th>
+                      ))}
+                    </tr>
+                  ))}
+                </thead>
+                <tbody>
+                  {table.getRowModel().rows.map((row) => (
+                    <tr key={row.id} className="rfm-workspace-list-icon-row">
+                      {row.getVisibleCells().map((cell) => (
+                        <td
+                          key={cell.id}
+                          className="rfm-workspace-list-align-txt"
+                          onClick={() => handleClick(row.original)}
+                          onContextMenu={(event) => handleContextMenu(event, row.original.id, row.original.name)}
+                          onDoubleClick={() => handleDoubleClick(row.original.id)}
+                        >
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {!viewOnly && (
+                <button className="rfm-workspace-list-add-folder" onClick={openNewFolderModal}>
+                  {labels.addFolderButton}
+                </button>
+              )}
+            </>
           )}
-          </>
-        )}
-
-        {/* List File View */}
-        {viewStyle === ViewStyle.List && (
+        </div>
+      </section>
+      {!viewOnly && (
         <>
-          <table className="w-full">
-            <thead>
-              {table.getHeaderGroups().map(headerGroup => (
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map(header => (
-                    <th className="rfm-workspace-list-th" key={header.id} onClick={header.column.getToggleSortingHandler()}>
-                      <div className="rfm-workspace-list-th-content">
-                        {flexRender(header.column.columnDef.header, header.getContext())}
-                        {header.column.getIsSorted() ? (header.column.getIsSorted() === 'desc' ? <SvgIcon svgType="arrow-down" className="rfm-header-sort-icon" /> : <SvgIcon svgType="arrow-up" className="rfm-header-sort-icon" />) : ''}
-                      </div>
-                    </th>
-                  ))}
-                </tr>
-              ))}
-            </thead>
-            <tbody>
-              {table.getRowModel().rows.map(row => (
-                <tr key={row.id} className="rfm-workspace-list-icon-row">
-                  {row.getVisibleCells().map(cell => (
-                    <td className="rfm-workspace-list-align-txt" key={cell.id} onClick={() => handleClick(row.original)} onDoubleClick={() => handleDoubleClick(row.original.id)}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {!viewOnly && (
-            <button className="rfm-workspace-list-add-folder" onClick={() => setNewFolderModalVisible(true)}>Add Folder</button>
-          )}
+          <NewFolderModal
+            isVisible={newFolderModalVisible}
+            onClose={() => setNewFolderModalVisible(false)}
+          />
+          <DelItemModal
+            itemName={toDeleteItem?.name}
+            toDeleteItemId={toDeleteItem?.id}
+            isVisible={!!toDeleteItem}
+            onClose={() => setToDeleteItem(null)}
+          />
+          <RenameItemModal
+            itemName={toRenameItem?.name}
+            toRenameItemId={toRenameItem?.id}
+            isVisible={!!toRenameItem}
+            onClose={() => setToRenameItem(null)}
+          />
+          <ManageItemModal
+            itemName={toManageItem?.name}
+            isVisible={!!toManageItem}
+            openDelete={() => { 
+              if (!toManageItem)
+                throw 'No item being managed.'
+              openDeleteItemModal(toManageItem)
+            } }
+            openRename={() => { 
+              if (!toManageItem)
+                throw 'No item being managed.'
+              openRenameItemModal(toManageItem)
+            } }
+            onClose={() => setToManageItem(null)}
+          />
+          <UploadFileModal
+            isVisible={uploadFileModalVisible}
+            onClose={onCloseUploadFileModal}
+          />
         </>
-        )}    
-
-
-        {!viewOnly && (
-          <>
-            <NewFolderModal
-              isVisible={newFolderModalVisible}
-              onClose={() => setNewFolderModalVisible(false)}
-            />
-            <UploadFileModal
-              isVisible={uploadFileModalVisible}
-              onClose={onCloseUploadFileModal}
-            />
-          </>
-        )}
-      </div>
-    </section>
+      )}
+    </div>
   );
 };
 

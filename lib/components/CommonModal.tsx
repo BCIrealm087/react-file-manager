@@ -2,26 +2,27 @@ import React from "react";
 import Draggable from "react-draggable";
 import SvgIcon from "./SvgIcon";
 
-interface IModalProps {
-  title: string;
+interface CommonModalProps {
   children: React.ReactNode;
+  title: string;
   isVisible: boolean;
   onClose: () => void;
 }
 
-const CommonModal: React.FC<IModalProps> = ({
+const CommonModal: React.FC<CommonModalProps> = ({
   children,
   title,
   isVisible,
   onClose,
-}: IModalProps) => {
+}) => {
   if (!isVisible) {
-    return <></>;
+    return null;
   }
+
   return (
     <Draggable bounds="#react-file-manager-workspace">
       <div className="rfm-modal-container">
-        <div>
+        <div className="rfm-modal-header">
           <h3 className="rfm-modal-title">{title}</h3>
           <SvgIcon
             onClick={onClose}
@@ -29,7 +30,7 @@ const CommonModal: React.FC<IModalProps> = ({
             className="rfm-modal-icon"
           />
         </div>
-        {children}
+        <div className="rfm-modal-content">{children}</div>
       </div>
     </Draggable>
   );
