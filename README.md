@@ -1,0 +1,1 @@
+Repository based on https://github.com/thelicato/react-file-manager created with the purpose to implement some of the missing features of the original project, and add some fixes and quality of life features (in the opinion of this fork's author).
