@@ -16,8 +16,7 @@ const NewFolderModal: React.FC<NewFolderModalProps> = ({ isVisible, onClose }) =
     const folderName = folderNameRef.current?.value;
     if (folderName && folderName.length > 0 && onCreateFolder) {
       try {
-        await onCreateFolder(folderName, folderNameRef.current);
-        onClose();
+        await onCreateFolder(folderName, folderNameRef.current) && onClose();
       } catch (error) {
         console.error("Error creating folder:", error);
       }

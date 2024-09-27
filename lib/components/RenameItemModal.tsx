@@ -26,8 +26,7 @@ const RenameItemModal: React.FC<RenameItemModalProps> = ({
     }
     if (newItemName && newItemName.length > 0 && onRename) {
       try {
-        await onRename(toRenameItemId, newItemName, itemNameRef.current);
-        onClose();
+        await onRename(toRenameItemId, newItemName, itemNameRef.current) && onClose();
       } catch (error) {
         console.error("Error renaming item:", error);
       }
