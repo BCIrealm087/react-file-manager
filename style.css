@@ -26,7 +26,7 @@ React File Manager | MIT License | https://github.com/thelicato/react-file-manag
 
 ::before,
 ::after {
-  --tw-content: '';
+  --tw-content: null;
 }
 
 /*
