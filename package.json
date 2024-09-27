@@ -10,11 +10,11 @@
     ".": "./dist/index.js"
   },
   "files": [
-    "dist/*"
+    "dist"
   ],
   "scripts": {
     "clean": "rimraf dist",
-    "build": "npm run clean && tsc",
+    "build": "npm run clean && tsc && copyfiles ./style.css ./dist",
     "prepare": "npm run build"
   },
   "dependencies": {
@@ -27,6 +27,7 @@
   "devDependencies": {
     "@types/react": "^18.3.9",
     "@types/react-dom": "^18.3.0",
+    "copyfiles": "^2.4.1",
     "rimraf": "^6.0.1"
   }
 }
