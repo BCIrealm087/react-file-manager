@@ -1,7 +1,7 @@
 {
   "name": "@bcirealm087/react-file-manager",
   "description": "A simple React component to build a Web File Manager - based on @thelicato/react-file-manager",
-  "version": "1.0",
+  "version": "1.0.0",
   "license": "MIT",
   "type": "module",
   "main": "dist/index.js",
@@ -10,13 +10,22 @@
     ".": "./dist/index.js"
   },
   "files": [
-    "dist"
+    "dist/*"
   ],
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "npm run clean && tsc",
+    "prepare": "npm run build"
+  },
   "dependencies": {
     "@tanstack/react-table": "^8.20.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-draggable": "^4.4.6",
     "react-dropzone": "^14.2.3"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.9",
+    "@types/react-dom": "^18.3.0"
   }
 }
