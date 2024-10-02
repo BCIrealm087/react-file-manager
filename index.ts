@@ -1,6 +1,6 @@
-import { ReactFileManager, IFileManagerProps } from "./lib/ReactFileManager";
-import { ViewStyle } from "./lib/types/Enums";
-import { FileType } from "./lib/types/Types";
+import { ReactFileManager, IFileManagerProps } from "./src/ReactFileManager";
+import { ViewStyle } from "./src/types/Enums";
+import { FileType } from "./src/types/Types";
 
 type FileSystemType = FileType[];
 
