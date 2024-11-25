@@ -10,10 +10,11 @@ interface IFileManagerProps {
   viewOnly?: boolean;
   onDoubleClick?: (id: string) => void;
   onRefresh?: (id: string) => Promise<void>;
-  onUpload?: (file: File, folderId: string) => Promise<boolean>;
-  onCreateFolder?: (name: string, ref: HTMLInputElement) => Promise<boolean>;
+  onUpload?: (file: File, folderId: string, triggerRef: HTMLButtonElement) => Promise<boolean>;
+  onCreateFolder?: (name: string, triggerRef: HTMLInputElement) => Promise<boolean>;
+  onPasteItem?: (itemId: string, newParentId: string, triggerRef: HTMLButtonElement) => Promise<boolean>;
   onDelete?: (id: string) => void;
-  onRename?: (id: string, newName: string, ref: HTMLInputElement) => Promise<boolean>;
+  onRename?: (id: string, newName: string, triggerRef: HTMLInputElement) => Promise<boolean>;
   labels?: Partial<Labels>;
 }
 
@@ -23,7 +24,8 @@ const ReactFileManager: React.FC<IFileManagerProps> = ({
   onDoubleClick,
   onRefresh,
   onUpload,
-  onCreateFolder,
+  onCreateFolder, 
+  onPasteItem, 
   onDelete,
   onRename,
   labels,
@@ -39,13 +41,16 @@ const ReactFileManager: React.FC<IFileManagerProps> = ({
     addFolderTitle: 'Create New Folder',
     addFolderPlaceholder: 'Folder Name',
     addFolderConfirm: 'Create',
+    pasteItemButton: 'Paste cut item', 
+    cutButton: 'Cut', 
+    undoCutItem: 'Undo cut item', 
     manageTitle: 'Managing',
     renameButton: 'Rename',
     renameTitle: 'Rename',
     renameConfirm: 'Rename',
     deleteButton: 'Delete',
     deleteTitle: 'Delete',
-    deleteConfirm: 'Delete',
+    deleteConfirm: 'Delete', 
     uploadTitle: 'Upload file',
     uploadConfirmationMsg: 'Are you sure you want to upload the file?',
     uploadConfirm: 'Upload',
@@ -67,7 +72,8 @@ const ReactFileManager: React.FC<IFileManagerProps> = ({
         onDoubleClick,
         onRefresh,
         onUpload,
-        onCreateFolder,
+        onCreateFolder, 
+        onPasteItem, 
         onDelete,
         onRename,
         uploadedFileData,

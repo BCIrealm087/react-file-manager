@@ -1170,6 +1170,7 @@ video {
   position: relative;
   display: flex;
   flex-direction: column;
+  min-height: 20rem;
   width: 100%;
   gap: 2rem;
   padding: 1rem;
@@ -1194,6 +1195,23 @@ video {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
+}
+
+.rfm-cut-item-options {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+}
+
+.rfm-cut-item-options-button {
+  display: flex;
+  flex-grow: 1;
+  justify-content: center;
+  white-space: pre;
+}
+
+.rfm-cut-item {
+  opacity: 0.5;
 }
 
 /* FileManager */

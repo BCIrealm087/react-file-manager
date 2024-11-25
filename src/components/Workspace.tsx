@@ -1,4 +1,7 @@
-import React, { useState, useMemo, useCallback, useEffect } from "react";
+import React, { 
+  useState, useMemo, useCallback, 
+  useEffect 
+} from "react";
 import { useDropzone } from "react-dropzone";
 import { useFileManager } from "../context/FileManagerContext";
 import FileIcon from "./FileIcon"
@@ -9,9 +12,13 @@ import DelItemModal from "./DelItemModal";
 import RenameItemModal from "./RenameItemModal";
 import ManageItemModal from "./ManageItemModal";
 import UploadFileModal from "./UploadFileModal";
+import CutItemOptions from "./CutItemOptions";
 import SvgIcon from "./SvgIcon"
-import { createColumnHelper, flexRender, getCoreRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table";
-import { FileType } from "../types/Types";
+import { 
+  createColumnHelper, flexRender, getCoreRowModel, 
+  getSortedRowModel, useReactTable 
+} from "@tanstack/react-table";
+import { FileType, ShortFileInfo } from "../types/Types";
 
 const columnHelper = createColumnHelper<FileType>();
 const columns = [
@@ -33,11 +40,6 @@ const columns = [
   })
 ];
 
-type ShortFileInfo = {
-  id: string, 
-  name: string
-}
-
 const Workspace: React.FC = () => {
   const {
     labels,
@@ -46,14 +48,16 @@ const Workspace: React.FC = () => {
     viewStyle,
     viewOnly,
     setCurrentFolder,
-    setUploadedFileData,
+    setUploadedFileData, 
     onDoubleClick,
-    onRefresh,
+    onRefresh, 
+    onPasteItem
   } = useFileManager();
   
   const [newFolderModalVisible, setNewFolderModalVisible] = useState(false);
   const [toDeleteItem, setToDeleteItem] = useState<ShortFileInfo | null>(null);
   const [toRenameItem, setToRenameItem] = useState<ShortFileInfo | null>(null);
+  const [cutItem, setCutItem] = useState<ShortFileInfo | null>(null);
   const [uploadFileModalVisible, setUploadFileModalVisible] = useState(false);
   const [toManageItem, setToManageItem] = useState<ShortFileInfo | null>(null);
 
@@ -120,6 +124,7 @@ const Workspace: React.FC = () => {
   });
 
   const handleClick = async (file: FileType) => {
+    if(file.id===cutItem?.id) return;
     if (file.isDir) {
       setCurrentFolder(file.id);
       if (onRefresh) {
@@ -146,6 +151,7 @@ const Workspace: React.FC = () => {
   };
 
   const openManageItemModal = (item: ShortFileInfo) => {
+    if (item.id===cutItem?.id) return;
     setToManageItem(item);
     setNewFolderModalVisible(false);
   };
@@ -178,11 +184,25 @@ const Workspace: React.FC = () => {
           {viewStyle === "icons" && (
             <>
               {currentFolderFiles.map((f) => (
-                <button key={f.id} onDoubleClick={() => handleDoubleClick(f.id)}>
-                  <FileIcon id={f.id} name={f.name} isDir={f.isDir} handleContextMenu={handleContextMenu} />
+                <button className={ (f.id===cutItem?.id) ? 'rfm-cut-item' : '' } key={f.id} onDoubleClick={() => handleDoubleClick(f.id)}>
+                  <FileIcon 
+                    id={f.id} 
+                    name={f.name} 
+                    isDir={f.isDir} 
+                    isCutItem={ f.id===cutItem?.id }
+                    handleContextMenu={handleContextMenu} 
+                  />
                 </button>
               ))}
-              {!viewOnly && <NewFolderIcon onClick={openNewFolderModal} />}
+              {!viewOnly && (
+                <>
+                  <NewFolderIcon onClick={openNewFolderModal} />
+                  {cutItem && <CutItemOptions
+                    cutItem={ cutItem }
+                    handleClose={ ()=>setCutItem(null) }
+                  />}
+                </>
+              )}
             </>
           )}
           {viewStyle === "list" && (
@@ -212,7 +232,7 @@ const Workspace: React.FC = () => {
                       {row.getVisibleCells().map((cell) => (
                         <td
                           key={cell.id}
-                          className="rfm-workspace-list-align-txt"
+                          className={`rfm-workspace-list-align-txt${(row.original.id===cutItem?.id) ? ' rfm-cut-item' : '' }`}
                           onClick={() => handleClick(row.original)}
                           onContextMenu={(event) => handleContextMenu(event, row.original.id, row.original.name)}
                           onDoubleClick={() => handleDoubleClick(row.original.id)}
@@ -225,9 +245,15 @@ const Workspace: React.FC = () => {
                 </tbody>
               </table>
               {!viewOnly && (
-                <button className="rfm-workspace-list-add-folder" onClick={openNewFolderModal}>
-                  {labels.addFolderButton}
-                </button>
+                <React.Fragment>
+                  <button className="rfm-workspace-list-add-folder" onClick={ openNewFolderModal }>
+                    {labels.addFolderButton}
+                  </button>
+                  {cutItem && <CutItemOptions
+                    cutItem={ cutItem }
+                    handleClose={ ()=>setCutItem(null) }
+                  />}
+                </React.Fragment>
               )}
             </>
           )}
@@ -263,6 +289,11 @@ const Workspace: React.FC = () => {
               if (!toManageItem)
                 throw 'No item being managed.'
               openRenameItemModal(toManageItem)
+            } }
+            cutItem={() => {
+              if (!toManageItem)
+                throw 'No item being managed.'
+              setCutItem(toManageItem)
             } }
             onClose={() => setToManageItem(null)}
           />

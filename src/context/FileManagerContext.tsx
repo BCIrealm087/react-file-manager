@@ -12,10 +12,11 @@ interface FileManagerContextType {
   setCurrentFolder: (folderId: string) => void;
   onDoubleClick?: (id: string) => void;
   onRefresh?: (id: string) => Promise<void>;
-  onUpload?: (file: File, folderId: string) => Promise<boolean>;
-  onCreateFolder?: (name: string, ref: HTMLInputElement) => Promise<boolean>;
+  onUpload?: (file: File, folderId: string, triggerRef: HTMLButtonElement) => Promise<boolean>;
+  onCreateFolder?: (name: string, triggerRef: HTMLInputElement) => Promise<boolean>;
+  onPasteItem?: (itemId: string, newParentId: string, triggerRef: HTMLButtonElement) => Promise<boolean>;
   onDelete?: (id: string) => void;
-  onRename?: (id: string, newName: string, ref: HTMLInputElement) => Promise<boolean>;
+  onRename?: (id: string, newName: string, triggerRef: HTMLInputElement) => Promise<boolean>;
   uploadedFileData?: File;
   setUploadedFileData: (file?: File) => void;
 }

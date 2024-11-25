@@ -10,10 +10,10 @@ interface UploadFileModalProps {
 const UploadFileModal: React.FC<UploadFileModalProps> = ({ isVisible, onClose }) => {
   const { labels, onUpload, uploadedFileData, currentFolder } = useFileManager();
 
-  const onConfirm = async () => {
+  const onConfirm = async (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     if (onUpload && uploadedFileData) {
       try {
-        await onUpload(uploadedFileData, currentFolder);
+        await onUpload(uploadedFileData, currentFolder, event.currentTarget);
         onClose();
       } catch (error) {
         console.error("Error uploading file:", error);

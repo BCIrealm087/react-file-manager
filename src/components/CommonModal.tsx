@@ -15,13 +15,13 @@ const CommonModal: React.FC<CommonModalProps> = ({
   isVisible,
   onClose,
 }) => {
+  const nodeRef = React.useRef<HTMLDivElement>(null);
   if (!isVisible) {
     return null;
   }
-
   return (
-    <Draggable bounds="#react-file-manager-workspace">
-      <div className="rfm-modal-container">
+    <Draggable nodeRef={ nodeRef } bounds="#react-file-manager-workspace">
+      <div ref={nodeRef} className="rfm-modal-container">
         <div className="rfm-modal-header">
           <h3 className="rfm-modal-title">{title}</h3>
           <SvgIcon
