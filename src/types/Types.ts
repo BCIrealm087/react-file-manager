@@ -25,6 +25,11 @@ export type FileType = {
   lastModified?: number;
 };
 
+export type ShortFileInfo = {
+  id: string, 
+  name: string
+}
+
 export interface Labels {
   fileName: string;
   lastModified: string;
@@ -32,6 +37,9 @@ export interface Labels {
   addFolderTitle: string;
   addFolderPlaceholder: string;
   addFolderConfirm: string;
+  pasteItemButton: string;
+  cutButton: string;
+  undoCutItem: string;
   manageTitle: string;
   renameButton: string;
   renameTitle: string;

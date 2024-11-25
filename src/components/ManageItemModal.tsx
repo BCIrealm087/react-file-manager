@@ -7,6 +7,7 @@ interface ManageItemModalProps {
   onClose: () => void;
   itemName?: string;
   openRename: () => void;
+  cutItem: () => void;
   openDelete: () => void;
 }
 
@@ -15,7 +16,8 @@ const ManageItemModal: React.FC<ManageItemModalProps> = ({
   onClose,
   itemName,
   openRename,
-  openDelete,
+  cutItem, 
+  openDelete
 }) => {
   const { labels } = useFileManager();
 
@@ -36,6 +38,16 @@ const ManageItemModal: React.FC<ManageItemModalProps> = ({
             className="rfm-new-folder-modal-btn"
           >
             {labels.renameButton}
+          </button>
+          <button
+            onClick={() => {
+              cutItem();
+              onClose();
+            }}
+            type="button"
+            className="rfm-new-folder-modal-btn"
+          >
+            { labels.cutButton }
           </button>
           <button
             onClick={() => {

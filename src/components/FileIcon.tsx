@@ -6,13 +6,15 @@ interface FileIconProps {
   id: string;
   name: string;
   isDir: boolean;
+  isCutItem: boolean;
   handleContextMenu: (event: React.MouseEvent, fileId: string, fileName: string) => void;
 }
 
-const FileIcon: React.FC<FileIconProps> = ({ id, name, isDir, handleContextMenu }) => {
+const FileIcon: React.FC<FileIconProps> = ({ id, name, isDir, isCutItem, handleContextMenu }) => {
   const { setCurrentFolder, onRefresh } = useFileManager();
 
   const handleClick = async () => {
+    if(isCutItem) return;
     if (isDir) {
       setCurrentFolder(id);
       if (onRefresh) {
