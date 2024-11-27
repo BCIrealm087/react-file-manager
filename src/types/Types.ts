@@ -40,6 +40,10 @@ export interface Labels {
   pasteItemButton: string;
   cutButton: string;
   undoCutItem: string;
+  saveFileButton: string;
+  saveFileTitle: string;
+  fileNamePlaceholder: string;
+  saveFileConfirm: string;
   manageTitle: string;
   renameButton: string;
   renameTitle: string;

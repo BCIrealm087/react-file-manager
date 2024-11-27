@@ -4,6 +4,9 @@ import { ViewStyle } from "../types/Enums";
 
 interface FileManagerContextType {
   fs: FileType[];
+  isSavingFile?: boolean;
+  fileNameDefault?: string;
+  fileSavingExt?: string;
   labels: Labels;
   viewStyle: ViewStyle;
   setViewStyle: (style: ViewStyle) => void;
@@ -15,6 +18,7 @@ interface FileManagerContextType {
   onUpload?: (file: File, folderId: string, triggerRef: HTMLButtonElement) => Promise<boolean>;
   onCreateFolder?: (name: string, triggerRef: HTMLInputElement) => Promise<boolean>;
   onPasteItem?: (itemId: string, newParentId: string, triggerRef: HTMLButtonElement) => Promise<boolean>;
+  onSaveFile?: (name: string, triggerRef: HTMLInputElement) => Promise<boolean>;
   onDelete?: (id: string) => void;
   onRename?: (id: string, newName: string, triggerRef: HTMLInputElement) => Promise<boolean>;
   uploadedFileData?: File;
