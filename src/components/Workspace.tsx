@@ -8,6 +8,7 @@ import FileIcon from "./FileIcon"
 import NewFolderIcon from "./NewFolderIcon";
 import FolderPath from "./FolderPath";
 import NewFolderModal from "./NewFolderModal";
+import SaveFileModal from "./SaveFileModal";
 import DelItemModal from "./DelItemModal";
 import RenameItemModal from "./RenameItemModal";
 import ManageItemModal from "./ManageItemModal";
@@ -45,19 +46,21 @@ const Workspace: React.FC = () => {
     labels,
     currentFolder,
     fs,
-    viewStyle,
+    viewStyle, 
+    isSavingFile: isSavingFileInitial, 
     viewOnly,
     setCurrentFolder,
     setUploadedFileData, 
     onDoubleClick,
-    onRefresh, 
-    onPasteItem
+    onRefresh
   } = useFileManager();
   
   const [newFolderModalVisible, setNewFolderModalVisible] = useState(false);
+  const [saveFileModalVisible, setSaveFileModalVisible] = useState(false);
   const [toDeleteItem, setToDeleteItem] = useState<ShortFileInfo | null>(null);
   const [toRenameItem, setToRenameItem] = useState<ShortFileInfo | null>(null);
   const [cutItem, setCutItem] = useState<ShortFileInfo | null>(null);
+  const [isSavingFile, setIsSavingFile] = useState(isSavingFileInitial);
   const [uploadFileModalVisible, setUploadFileModalVisible] = useState(false);
   const [toManageItem, setToManageItem] = useState<ShortFileInfo | null>(null);
 
@@ -72,6 +75,9 @@ const Workspace: React.FC = () => {
   useEffect(() => {
     if (newFolderModalVisible) {
       setNewFolderModalVisible(false);
+    }
+    if (saveFileModalVisible) {
+      setSaveFileModalVisible(false);
     }
     if (toDeleteItem) {
       setToDeleteItem(null);
@@ -150,25 +156,37 @@ const Workspace: React.FC = () => {
     setToRenameItem(null);
   };
 
+  const openSaveFileModal = () => {
+    setSaveFileModalVisible(true);
+    setNewFolderModalVisible(false);
+    setToManageItem(null);
+    setToDeleteItem(null);
+    setToRenameItem(null);
+  };
+
   const openManageItemModal = (item: ShortFileInfo) => {
     if (item.id===cutItem?.id) return;
     setToManageItem(item);
     setNewFolderModalVisible(false);
+    setSaveFileModalVisible(false);
   };
 
   const openDeleteItemModal = (item: ShortFileInfo) => {
     setToDeleteItem(item);
     setNewFolderModalVisible(false);
+    setSaveFileModalVisible(false);
   };
 
   const openRenameItemModal = (item: ShortFileInfo) => {
     setToRenameItem(item);
     setNewFolderModalVisible(false);
+    setSaveFileModalVisible(false);
   };
 
   const handleContextMenu = (event: React.MouseEvent, fileId: string, fileName: string) => {
     event.preventDefault();
     setNewFolderModalVisible(false);
+    setSaveFileModalVisible(false);
     openManageItemModal({ id: fileId, name: fileName });
   };
 
@@ -190,17 +208,20 @@ const Workspace: React.FC = () => {
                     name={f.name} 
                     isDir={f.isDir} 
                     isCutItem={ f.id===cutItem?.id }
-                    handleContextMenu={handleContextMenu} 
+                    handleContextMenu={ handleContextMenu } 
                   />
                 </button>
               ))}
               {!viewOnly && (
                 <>
-                  <NewFolderIcon onClick={openNewFolderModal} />
-                  {cutItem && <CutItemOptions
+                  <NewFolderIcon onClick={ openNewFolderModal } />
+                  { isSavingFile && <button className="rfm-workspace-list-add-folder" onClick={ openSaveFileModal } >
+                      { labels.saveFileButton }
+                  </button> }
+                  { cutItem && <CutItemOptions
                     cutItem={ cutItem }
                     handleClose={ ()=>setCutItem(null) }
-                  />}
+                  /> }
                 </>
               )}
             </>
@@ -246,13 +267,30 @@ const Workspace: React.FC = () => {
               </table>
               {!viewOnly && (
                 <React.Fragment>
-                  <button className="rfm-workspace-list-add-folder" onClick={ openNewFolderModal }>
-                    {labels.addFolderButton}
-                  </button>
-                  {cutItem && <CutItemOptions
+                  { (isSavingFile)
+                    ? <div className="rfm-cut-item-options">
+                        <button 
+                          className="rfm-workspace-list-add-folder rfm-cut-item-options-button" 
+                          onClick={ openNewFolderModal }
+                        >
+                          { labels.addFolderButton }
+                        </button>
+                        <button 
+                          className="rfm-workspace-list-add-folder rfm-cut-item-options-button" 
+                          onClick={ openSaveFileModal }
+                        >
+                          { labels.saveFileButton }
+                        </button>
+                      </div>
+                    : <button className="rfm-workspace-list-add-folder" onClick={ openNewFolderModal }>
+                        { labels.addFolderButton }
+                      </button>
+
+                  }
+                  { cutItem && <CutItemOptions
                     cutItem={ cutItem }
                     handleClose={ ()=>setCutItem(null) }
-                  />}
+                  /> }
                 </React.Fragment>
               )}
             </>
@@ -262,8 +300,13 @@ const Workspace: React.FC = () => {
       {!viewOnly && (
         <>
           <NewFolderModal
-            isVisible={newFolderModalVisible}
-            onClose={() => setNewFolderModalVisible(false)}
+            isVisible={ newFolderModalVisible }
+            onClose={ () => setNewFolderModalVisible(false) }
+          />
+          <SaveFileModal
+            isVisible={ saveFileModalVisible }
+            onSuccess={ () => setIsSavingFile(false) }
+            onClose={ () => setSaveFileModalVisible(false) }
           />
           <DelItemModal
             itemName={toDeleteItem?.name}
